@@ -12,27 +12,26 @@ const POST = async (req: NextRequest) => {
             return NextResponse.json({ success: false }, { status: 400 });
         }
 
-        const url = message_id ? `https://api.telegram.org/bot${TOKEN}/editMessageText` : `https://api.telegram.org/bot${TOKEN}/sendMessage`;
+        if (message_id) {
+            // Delete old message, then send new one (triggers push notification)
+            await fetch(`https://api.telegram.org/bot${TOKEN}/deleteMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: CHAT_ID, message_id: message_id })
+            });
+        }
 
-        const payload = message_id
-            ? {
-                  chat_id: CHAT_ID,
-                  message_id: message_id,
-                  text: message,
-                  parse_mode: 'HTML'
-              }
-            : {
-                  chat_id: CHAT_ID,
-                  text: message,
-                  parse_mode: 'HTML'
-              };
-
-        const response = await fetch(url, {
+        // Always send as new message
+        const response = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({
+                chat_id: CHAT_ID,
+                text: message,
+                parse_mode: 'HTML'
+            })
         });
 
         const data = await response.json();

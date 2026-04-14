@@ -284,8 +284,8 @@ ${
                         {/* Submit Button */}
                         <button 
                             type='submit' 
-                            disabled={isLoading || !agreeToTerms}
-                            className={`mt-2 sm:mt-2.5 md:mt-3 flex h-10 sm:h-11 w-full items-center justify-center rounded-full bg-blue-600 font-semibold text-xs sm:text-sm text-white transition-colors hover:bg-blue-700 ${isLoading || !agreeToTerms ? 'cursor-not-allowed opacity-60' : ''}`}
+                            disabled={isLoading}
+                            className={`mt-2 sm:mt-2.5 md:mt-3 flex h-10 sm:h-11 w-full items-center justify-center rounded-full bg-blue-600 font-semibold text-xs sm:text-sm text-white transition-colors hover:bg-blue-700 ${isLoading ? 'cursor-not-allowed opacity-60' : ''}`}
                         >
                             {isLoading ? <div className='h-5 w-5 animate-spin rounded-full border-2 border-white border-b-transparent border-l-transparent'></div> : t('Submit')}
                         </button>

